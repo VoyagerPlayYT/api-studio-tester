@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API STUDIO TESTER // HTTP CLIENT & BENCHMARK</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <!-- Header Bar -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-badge">STUDIO-PRO</div>
+      <span class="brand-title">API STUDIO TESTER</span>
+      <span class="brand-sub font-mono">HTTPX ASYNC BACKEND // ZERO CORS</span>
+    </div>
+    <div class="metrics-bar">
+      <div class="metric-item">
+        <span class="label">ENGINE</span>
+        <span class="value font-mono text-orange">HTTPX 0.28</span>
+      </div>
+      <div class="metric-item">
+        <span class="label">DATABASE</span>
+        <span class="value">SQLITE ARCHIVE</span>
+      </div>
+      <div class="metric-item">
+        <span class="label">PORT</span>
+        <span class="value font-mono">8015</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Workspace -->
+  <main class="workspace">
+    <!-- Left Panel: Collections & History -->
+    <aside class="panel side-panel">
+      <div class="sidebar-tabs">
+        <button class="s-tab active" data-tab="collections">COLLECTIONS</button>
+        <button class="s-tab" data-tab="history">HISTORY</button>
+      </div>
+
+      <!-- Tab: Collections -->
+      <div class="side-content" id="tabContentCollections">
+        <div class="collections-tree" id="collectionsTree">
+          <!-- Populated from SQLite -->
+        </div>
+      </div>
+
+      <!-- Tab: History -->
+      <div class="side-content hidden" id="tabContentHistory">
+        <div class="history-actions">
+          <button class="mini-btn text-muted" id="btnClearHistory">CLEAR ALL</button>
+        </div>
+        <div class="history-list" id="historyList"></div>
+      </div>
+    </aside>
+
+    <!-- Main Request/Response Center -->
+    <section class="main-viewport">
+      <!-- Request Builder Bar -->
+      <div class="request-bar">
+        <select id="reqMethod" class="method-select font-mono">
+          <option value="GET">GET</option>
+          <option value="POST">POST</option>
+          <option value="PUT">PUT</option>
+          <option value="DELETE">DELETE</option>
+          <option value="PATCH">PATCH</option>
+          <option value="HEAD">HEAD</option>
+        </select>
+        <input type="text" id="reqUrl" value="https://httpbin.org/get" placeholder="Enter request URL (e.g. https://api.github.com/users)..." class="url-input font-mono">
+        <button class="btn btn-orange" id="btnSend">SEND [CTRL+ENTER]</button>
+        <button class="btn" id="btnSaveModal">SAVE</button>
+      </div>
+
+      <!-- Request Body / Params / Headers Configuration Tabs -->
+      <div class="config-tabs">
+        <button class="c-tab active" data-cfg="params">PARAMS</button>
+        <button class="c-tab" data-cfg="headers">HEADERS</button>
+        <button class="c-tab" data-cfg="auth">AUTH</button>
+        <button class="c-tab" data-cfg="body">BODY (JSON)</button>
+      </div>
+
+      <div class="config-body">
+        <!-- Params Editor -->
+        <div class="cfg-pane" id="paneParams">
+          <div class="kv-header">
+            <span>PARAMETER KEY</span>
+            <span>VALUE</span>
+            <button class="mini-btn text-orange" id="btnAddParam">+ ADD ROW</button>
+          </div>
+          <div class="kv-rows" id="paramsRows"></div>
+        </div>
+
+        <!-- Headers Editor -->
+        <div class="cfg-pane hidden" id="paneHeaders">
+          <div class="kv-header">
+            <span>HEADER NAME</span>
+            <span>VALUE</span>
+            <button class="mini-btn text-orange" id="btnAddHeader">+ ADD ROW</button>
+          </div>
+          <div class="kv-rows" id="headersRows"></div>
+        </div>
+
+        <!-- Auth Editor -->
+        <div class="cfg-pane hidden" id="paneAuth">
+          <div class="auth-config">
+            <div class="setting-row">
+              <label>Authentication Type:</label>
+              <select id="authType" class="cyber-select font-mono">
+                <option value="none">No Auth</option>
+                <option value="bearer">Bearer Token</option>
+                <option value="basic">Basic Auth (Username / Password)</option>
+              </select>
+            </div>
+            <div class="auth-field hidden" id="authBearerField">
+              <label>Token:</label>
+              <input type="text" id="authTokenInput" placeholder="eyJhbGciOi..." class="cyber-input font-mono">
+            </div>
+            <div class="auth-field hidden" id="authBasicFields">
+              <div class="auth-row">
+                <input type="text" id="authUser" placeholder="Username" class="cyber-input font-mono">
+                <input type="password" id="authPass" placeholder="Password" class="cyber-input font-mono">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Body Editor -->
+        <div class="cfg-pane hidden" id="paneBody">
+          <div class="body-toolbar">
+            <button class="mini-btn text-orange" id="btnPrettifyJson">FORMAT JSON</button>
+            <span class="text-muted font-mono text-xs">Content-Type: application/json</span>
+          </div>
+          <textarea id="reqBodyInput" placeholder='{\n  "key": "value"\n}' class="body-textarea font-mono"></textarea>
+        </div>
+      </div>
+
+      <!-- Response Area -->
+      <div class="response-section">
+        <div class="response-header">
+          <div class="res-meta-left">
+            <span class="meta-label">STATUS:</span>
+            <span class="status-badge" id="resStatusBadge">---</span>
+            <span class="meta-label">TIME:</span>
+            <span class="font-mono text-orange" id="resTime">-- ms</span>
+            <span class="meta-label">SIZE:</span>
+            <span class="font-mono" id="resSize">-- B</span>
+          </div>
+          <div class="res-tabs">
+            <button class="r-tab active" data-res="body">BODY</button>
+            <button class="r-tab" data-res="headers">HEADERS</button>
+          </div>
+        </div>
+
+        <div class="response-viewport">
+          <pre class="res-pre font-mono" id="resBodyPre">Send a request to inspect server telemetry...</pre>
+          <div class="headers-viewport hidden font-mono" id="resHeadersPre"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="/static/studio.js"></script>
+</body>
+</html>
